@@ -1,6 +1,7 @@
 """The Repository Web Service is designed to interact with the repository via HTTP."""
 
 import json
+import logging
 import os
 import re
 import subprocess as sp
@@ -84,24 +85,39 @@ def update_cfg_by_env(cfg):
             cfg['common'][item[0]] = item[1]
 
 
+def logging_cfg():
+    """Configure logging."""
+    logging.basicConfig(format='%(asctime)s (%(levelname)s) %(message)s',
+                        level=logging.INFO)
+
+
 def server_prepare():
     """Prepare server for run."""
     # Get configuration.
+    logging.info('Load cfg...')
     cfg = load_cfg()
     update_cfg_by_env(cfg)
 
     # Configure the auth module.
+    logging.info('Configure auth module...')
     auth_provider.set_credentials(cfg['common']['credentials'])
 
     # Configure S3 backend.
     s3_model = S3AsyncModel(cfg['model'])
+    logging.info('Synchronizing metainformation of repositories...')
     s3_model.sync_all_repos()
 
     # Set the controller to work with S3.
+    logging.info('Set handlers...')
     s3_view = S3Controller.as_view('s3_view', s3_model)
     app.add_url_rule('/<path:subpath>', view_func=s3_view,
         methods=['GET', 'PUT', 'DELETE'])
 
 
+# It is a good practice to configure logging
+# before creating the application object.
+# (https://flask.palletsprojects.com/en/2.0.x/logging/#basic-configuration)
+logging_cfg()
 app = Flask(__name__)
 server_prepare()
+logging.info('Start server...')
