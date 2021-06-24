@@ -70,10 +70,9 @@ def server_prepare():
     s3_model.sync_all_repos()
 
     # Set the controller to work with S3.
-    s3_view = S3Controller.as_view('s3_view', s3_model)
-    app.add_url_rule('/<path:subpath>', view_func=s3_view,
-        methods=['GET', 'PUT', 'DELETE'])
-
+    s3_controller = S3Controller.as_view('s3_controller', s3_model)
+    app.add_url_rule('/<path:subpath>', view_func=s3_controller,
+        methods=['PUT', 'DELETE'])
 
 app = Flask(__name__)
 server_prepare()

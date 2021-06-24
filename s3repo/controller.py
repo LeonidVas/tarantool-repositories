@@ -91,11 +91,6 @@ class S3Controller(MethodView):
 
         return S3Controller.response_message('OK', 201)
 
-    def get(self, subpath):
-        """Returns the file or Package according to the "subpath" path."""
-        return S3Controller.response_message('Get has not yet been implemented.',
-            501)
-
     def delete(self, subpath):
         """Delete the file or Package according to the "subpath" path."""
         return S3Controller.response_message('Delete has not yet been implemented.',
