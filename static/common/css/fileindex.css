@@ -1,0 +1,63 @@
+body {
+    background-color: #222;
+    color: #ccc;
+}
+
+table {
+    border-collapse: separate;
+    border-radius: 6px;
+    width: 100%;
+    max-width: 700px;
+    min-width: 400px;
+    text-align: center;
+    margin-top: 2em;
+}
+
+caption {
+    caption-side: top;
+    font-style: italic;
+    font-size: 120%;
+    margin: 4px;
+}
+
+a:link, a:visited, a:active {
+    color: #ccc;
+}
+
+table, th, td {
+    border: 1px solid gray;
+    border-radius: 6px;
+}
+
+th, td {
+    height: 24px;
+    padding: 4px;
+    vertical-align: middle;
+}
+
+th {
+  background-color: #222;
+}
+
+table tr:nth-child(odd) td {
+  background-color: #333;
+}
+
+table tr:nth-child(even) td {
+  background-color: #555;
+}
+
+div.category {
+    display: flex;
+}
+
+ul {
+    margin-left: 3em;
+    margin-top: 4em;
+    list-style-type: none;
+    font-size: 120%;
+}
+
+.inverted-png {
+    filter: invert(1);
+}

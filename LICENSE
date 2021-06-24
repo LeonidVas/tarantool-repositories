@@ -28,3 +28,6 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
+This license applies to all files except those in the static
+folder. The files in this folder have their own license:
+static/icons/LICENSE.md.
