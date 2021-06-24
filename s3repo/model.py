@@ -340,12 +340,18 @@ class S3AsyncModel:
                     str(self.s3_settings['region']),
                 ]
 
+                # Set the "Origin", "Label" and "Description" values
+                # that can be used for the deb repository.
+                env = dict(
+                    os.environ,
+                    MKREPO_DEB_ORIGIN='Tarantool',
+                    MKREPO_DEB_LABEL='tarantool.org',
+                    MKREPO_DEB_DESCRIPTION='Tarantool DBMS and Tarantool modules')
                 # Include the package metainformation signature
                 # if we have a gpg key.
-                env = None
                 if self.s3_settings.get('gpg_sign_key'):
                     mkrepo_cmd.append('--sign')
-                    env = dict(os.environ,
+                    env = dict(env,
                                GPG_SIGN_KEY=self.s3_settings['gpg_sign_key'])
 
                 # Set the path to the repository.
