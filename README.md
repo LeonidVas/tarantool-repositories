@@ -81,11 +81,16 @@ curl -u user_name:password \
 ## Configuration
 
 The configuration is set by the environment variables and configuration file.
+In the case of using an environment variable, if a bool value is expected,
+all values except "0" and "False" will be interpreted as "True". If the
+variable is == "" or is not set, the default will be used.
 
 Environment variables:
 * `RWS_CFG` - path to a configuration file.
 * `RWS_CREDENTIALS` - authentication credentials in JSON format
   ('{"name": "password_hash"}').
+* `RWS_FORCE_SYNC` - skip malformed packages when synchronizing metainformation.
+  Default: `False`.
 * `S3_URL` - URL to access S3 (https://hb.bizmrg.com).
 * `S3_REGION` - region (ru-msk, us-east-2, ...).
 * `S3_BUCKET` - bucket name.
