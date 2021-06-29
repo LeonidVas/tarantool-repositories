@@ -50,7 +50,7 @@ prepare_restic_repo() {
 	# Init the repository if it doesn't initialized or exit if the
 	# password is wrong.
 	local CHECK_RESULT=0
-	local NOT_INIT_ERROR="Stat: stat .*/config: no such file or directory"
+	local NOT_INIT_ERROR="Fatal: unable to open config file:"
 	CHECK_OUT=$(restic --repo "${RWS_BACKUP_DEST}" cat config 2>&1) \
 		|| CHECK_RESULT=${?}
 
