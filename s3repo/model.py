@@ -340,6 +340,9 @@ class S3AsyncModel:
                     str(self.s3_settings['region']),
                 ]
 
+                if self.s3_settings.get('force_sync'):
+                    mkrepo_cmd.append('--force')
+
                 # Include the package metainformation signature
                 # if we have a gpg key.
                 env = None
