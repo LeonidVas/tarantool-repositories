@@ -58,6 +58,7 @@ def update_cfg_by_env(cfg):
     env_model_settings['base_path'] = os.getenv('S3_BASE_PATH')
     env_model_settings['access_key_id'] = os.getenv('S3_ACCESS_KEY')
     env_model_settings['secret_access_key'] = os.getenv('S3_SECRET_KEY')
+    env_model_settings['force_sync'] = os.getenv('RWS_FORCE_SYNC') == 'True' or False
     gpg_key_armored = os.getenv('GPG_SIGN_KEY_ARMORED')
     # GPG_SIGN_KEY_ARMORED stores GPG secret key for signing the repositories
     # metadata. Our task is to add this key to the system and get its name.

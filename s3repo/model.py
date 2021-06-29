@@ -349,6 +349,10 @@ class S3AsyncModel:
                     MKREPO_DEB_ORIGIN='Tarantool',
                     MKREPO_DEB_LABEL='tarantool.org',
                     MKREPO_DEB_DESCRIPTION='Tarantool DBMS and Tarantool modules')
+
+                if self.s3_settings.get('force_sync'):
+                    mkrepo_cmd.append('--force')
+
                 # Include the package metainformation signature
                 # if we have a gpg key.
                 if self.s3_settings.get('gpg_sign_key'):

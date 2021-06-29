@@ -86,6 +86,7 @@ Environment variables:
 * `RWS_CFG` - path to a configuration file.
 * `RWS_CREDENTIALS` - authentication credentials in JSON format
   ('{"name": "password_hash"}').
+* `RWS_FORCE_SYNC` - skip malformed packages when synchronizing metainformation.
 * `S3_URL` - URL to access S3 (https://hb.bizmrg.com).
 * `S3_REGION` - region (ru-msk, us-east-2, ...).
 * `S3_BUCKET` - bucket name.
