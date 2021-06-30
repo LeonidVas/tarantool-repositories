@@ -329,7 +329,7 @@ class S3AsyncModel:
                 self.sync_lock.release()
 
                 mkrepo_cmd = [
-                    'mkrepo',
+                    './third_party/mkrepo/mkrepo.py',
                     '--s3-access-key-id',
                     str(self.s3_settings['access_key_id']),
                     '--s3-secret-access-key',

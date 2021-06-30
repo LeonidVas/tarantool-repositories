@@ -1,0 +1,3 @@
+[submodule "third_party/mkrepo"]
+	path = third_party/mkrepo
+	url = https://github.com/knazarov/mkrepo.git
