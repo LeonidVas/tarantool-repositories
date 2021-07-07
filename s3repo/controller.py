@@ -1,5 +1,6 @@
 """Controllers for working with S3."""
 
+import logging
 import os
 
 from flask import jsonify
@@ -61,8 +62,9 @@ class S3Controller(MethodView):
         package = Package()
         for _, file in request.files.items():
             if not S3Controller.check_filename(file.filename):
-                msg = 'Invalid filename. Allowed file extensions: '+\
+                msg = 'Invalid filename. Allowed file extensions: ' +\
                     ', '.join(ALLOWED_EXTENSIONS)
+                logging.warning(msg)
                 return S3Controller.response_message(msg, 400)
 
             package.add_file(file.filename, file)
@@ -72,6 +74,7 @@ class S3Controller(MethodView):
         try:
             S3Controller.check_path(path_list, self.model.get_supported_repos())
         except RuntimeError as err:
+            logging.warning(str(err))
             return S3Controller.response_message(str(err), 400)
 
         # Fill in the information about the package distribution.
@@ -83,12 +86,16 @@ class S3Controller(MethodView):
         try:
             self.model.put_package(package)
         except S3ModelRequestError as err:
-            return S3Controller.response_message("Can't upload the package to S3: " +
-                str(err), 400)
+            msg = "Can't upload the package to S3: " + str(err)
+            logging.warning(msg)
+            return S3Controller.response_message(msg, 400)
         except Exception as err:
-            return S3Controller.response_message("Can't upload the package to S3: " +
-                str(err), 500)
+            msg = "Can't upload the package to S3: " + str(err)
+            logging.warning(msg)
+            return S3Controller.response_message(msg, 500)
 
+        msg = "Files uploaded: " + ', '.join(file for file in package.files)
+        logging.info(msg)
         return S3Controller.response_message('OK', 201)
 
     def get(self, subpath):

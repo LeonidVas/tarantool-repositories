@@ -1,5 +1,6 @@
 """Model for working with the repositories on S3."""
 
+import logging
 from multiprocessing.pool import ThreadPool
 import os
 import re
@@ -322,6 +323,7 @@ class S3AsyncModel:
         permanent or whether it can "return" if all current work has been
         completed.
         """
+        logging.info('Start sync thread.')
         while True:
             if self.unsync_repos:
                 self.sync_lock.acquire()
@@ -359,6 +361,9 @@ class S3AsyncModel:
                         self.sync_lock.acquire()
                         self.unsync_repos.add(sync_repo)
                         self.sync_lock.release()
+                        logging.warning('Synchronization failed: ' + sync_repo)
+                    else:
+                        logging.info('Metainformation has been synced: ' + sync_repo)
             elif permanent:
                 # The "unsync_repos" set is empty.
                 # Let's just wait a while.
@@ -366,6 +371,7 @@ class S3AsyncModel:
             else:
                 # This is a temporary "worker" and all current
                 # work has been completed.
+                logging.info('Stop sync thread.')
                 break
 
     def put_package(self, package):
