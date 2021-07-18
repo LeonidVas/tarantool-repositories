@@ -1,0 +1,46 @@
+<html>
+<head>
+    <title> Index of {{ displayed_path }} </title>
+    <link rel="stylesheet" href="{{url_for('static', filename='/common/css/fileindex.css')}}" type="text/css">
+</head>
+<body>
+    <h1> Index of {{ displayed_path }} </h1>
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    <img class=inverted-png src="{{url_for('static', filename='/icons/blank.png')}}" alt="[ICO]"/>
+                </th>
+                {% for item in ['Name', 'Last Modified', 'Size'] %}
+                    <th>{{ item }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                <img class=inverted-png src="{{ url_for('static', filename='/icons/back.png') }}" alt="[PARENTDIR]">
+            </td>
+            <td>
+                <a href="{{ url_for('s3_view', subpath=parent_path) }}"> Parent Directory </a>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% for item in items %}
+            <tr>
+                <td>
+                    <img class=inverted-png src="{{ url_for('static', filename='/icons/' + item.Type + '.png') }}" alt="[DIR]">
+                </td>
+                <td>
+                    {% set item_path = '/'.join([path, item.Name]) %}
+                    <a href="{{ url_for('s3_view', subpath=item_path, type=item.Type) }}"> {{ item.Name }} </a>
+                </td>
+                <td>{{ item.LastModified }}</td>
+                <td>{{ item.Size }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -6,6 +6,7 @@ import re
 import subprocess as sp
 import tempfile
 import time
+from collections import namedtuple
 from threading import Lock
 from threading import Thread
 
@@ -63,6 +64,7 @@ class S3AsyncModel:
             aws_secret_access_key=self.s3_settings['secret_access_key']
         )
         self.bucket = self.s3_resource.Bucket(self.s3_settings['bucket_name'])
+        self.s3_client = self.bucket.meta.client
 
         # unsync_repos - set of repositories for which metainformation
         # needs to be updated. All actions with "unsync_repos" must
@@ -144,6 +146,63 @@ class S3AsyncModel:
             raise RuntimeError('Unknown repository base: {0}.'.format(dist_base))
 
         return (repo_path, path)
+
+    @staticmethod
+    def _list_items(objects):
+        """Process "objects" from list_objects_v2() and certain
+        them to items list. "object" is a list having certain
+        structure definded as a returned value of
+        list_objects_v2().
+        """
+
+        fields = ['Type', 'Name', 'LastModified', 'Size']
+
+        # Item is tuple with metainfo of file or directory.
+        # Fields format:
+        # +------+------+--------------+------+
+        # | Type | Name | LastModified | Size |
+        # +------+------+--------------+------+
+        Item = namedtuple('Item', fields, defaults=['', '', '', ''])
+
+        # KeyCount is the number of keys returned with this
+        # request. KeyCount is 1 or emtpy directory (this folder
+        # itself as a key). Zero KeyCount means that this
+        # requested directory (prefix) doesn't exist.
+        if not objects.get('KeyCount'):
+            raise RuntimeError('No such directory.')
+
+        # Actually, S3 doesn't use the term directory/path, it
+        # simply maps the objects inside the bucket to a key like
+        # "path/to/object", where "/" is used as a delimiter for
+        # the common prefix of a group of keys. The result returns
+        # each distinct key prefix containing the delimiter in a
+        # "CommonPrefixes" element i.e. list of subdirectories.
+        common_prefixes = objects.get('CommonPrefixes') or {}
+        items = []
+        for prefix in common_prefixes:
+
+            directory_name = prefix.get('Prefix').split('/')[-2]
+            item = Item('directory', directory_name)
+            items.append(item)
+
+        # "Contents" is a metadata about each file returned.
+        contents = objects.get('Contents') or {}
+        for file_meta in contents:
+            file_name = file_meta.get('Key').split('/')[-1]
+            # list_objects_v2() paginator returns the current
+            # directory, as well as files with the same name
+            # (prefix), messing with the current directory,
+            # because they are S3 objects too. Ignore these
+            # objects.
+            if not file_name:
+                continue
+            last_modified = file_meta.get('LastModified').strftime("%Y-%m-%d %H:%M:%S")
+            size = file_meta.get('Size')
+
+            item = Item('file', file_name, last_modified, size)
+            items.append(item)
+
+        return items
 
     def _upload_files(self, package, tarantool_series, origin_files):
         """Upload files to one repo on S3."""
@@ -396,9 +455,49 @@ class S3AsyncModel:
         """Delete a package from S3."""
         NotImplementedError("delete_package hasn't been implemented yet.")
 
+    def get_directory(self, path):
+        """Get lists and metadata of directories and files within
+        directory from S3.
+        """
+
+        paginator = self.s3_client.get_paginator('list_objects_v2')
+        # Parameters for list_objects_v2():
+        # * 'Bucket' is a bucket name.
+        # * 'Delimiter' is a character you use to group keys.
+        # * 'Prefix' limits the response to keys that begin with
+        # the specified prefix i.e. it allows to get files and
+        # subdiectories located only in directory specified by
+        # 'path'.
+        #
+        # See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.list_objects_v2
+        # for more detaied description.
+        list_parameters = {'Bucket': self.bucket.name,
+                           'Delimiter': '/',
+                           'Prefix': path}
+
+        items = []
+        for objects in paginator.paginate(**list_parameters):
+            items.extend(S3AsyncModel._list_items(objects))
+
+        return items
+
     def get_file(self, path):
-        """Download a file from S3."""
-        NotImplementedError("get_file hasn't been implemented yet.")
+        """Get a file from S3 as a "Responce' object."""
+
+        self.sync_lock.acquire()
+        try:
+            # We suppose that files which we deal with are not
+            # large enough.
+            responce = self.s3_client.get_object(Bucket=self.bucket.name,
+                                                 Key=path)
+        except self.s3_client.exceptions.NoSuchKey:
+            self.sync_lock.release()
+            raise RuntimeError("No such key.")
+        except self.s3_client.exceptions.InvalidObjectState:
+            self.sync_lock.release()
+            raise RuntimeError("Invalid object state.")
+        self.sync_lock.release()
+        return responce
 
     def delete_file(self, path):
         """Delete a file from S3."""
